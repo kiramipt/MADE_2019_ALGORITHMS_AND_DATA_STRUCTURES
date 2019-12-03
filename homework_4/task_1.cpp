@@ -43,9 +43,10 @@ public:
 private:
     int m = 0;
     int number_of_elements = 0;
+    int number_of_removed_elements = 0;
     vector <string> table;
     vector <int> status; // 0 - empty | 1 - ok | -1 - deleted
-    void resize();
+    void resize(int new_m);
 };
 
 bool HashTable::has(const string & key) const {
@@ -70,7 +71,11 @@ bool HashTable::has(const string & key) const {
 bool HashTable::add(const string & key) {
 
     if ((float) number_of_elements / (float) m >= 0.75) {
-        resize();
+        resize(2 * m);
+    }
+
+    if ((float) number_of_removed_elements / (float) m > 0.5) {
+        resize(m / 2);
     }
 
     int hash_1 = get_hash_1(key, m);
@@ -114,16 +119,19 @@ bool HashTable::remove(const string & key) {
 
         if (table[hash] == key) {
             status[hash] = -1;
+            number_of_elements -= 1;
+            number_of_removed_elements += 1;
             return true;
         }
     }
     return false;
 }
 
-void HashTable::resize() {
+void HashTable::resize(int new_m) {
 
-    m *= 2;
+    m = new_m;
     number_of_elements = 0;
+    number_of_removed_elements = 0;
 
     vector <string> old_table = table;
     vector <int> old_status = status;
